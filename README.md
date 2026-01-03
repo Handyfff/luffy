@@ -1,37 +1,26 @@
 # Luffy
 
-**Luffy** is a powerful command-line interface (CLI) tool that allows you to search for, stream, and download movies and TV shows directly from your terminal. It scrapes content from FlixHQ and leverages external tools for high-quality playback and downloading.
+![Language](https://img.shields.io/badge/language-Go-blue.svg)
+![OS](https://img.shields.io/badge/OS-Linux%20%7C%20freeBSD%20%7C%20macOS%20%7C%20Windows%20%7C%20Android-lightgrey)
 
-## Features
+**Luffy** is a high-efficient, powerful, and fast movie scraper and streamer for the terminal. It allows you to search for, stream, and download movies and TV shows directly from your command line.
 
-- **Search & Discover**: Quickly search for movies and TV series.
-- **Interactive Selection**: Uses fuzzy finding to select titles, seasons, and episodes.
-- **Stream**: Watch content instantly using `mpv` (Linux/Windows) or `iina` (macOS).
-- **Download**: Download episodes or movies for offline viewing using `yt-dlp`.
-- **Batch Operations**: Support for selecting specific seasons and episode ranges (e.g., `1-5`).
-- **Cross-Platform**: Works on Linux, macOS, and Windows (assuming dependencies are met).
+## Overview
 
-## Prerequisites
-
-Before using Luffy, ensure you have the following installed on your system:
-
-1.  **Go** (v1.25+ recommended) - To build the application.
-2.  **Media Player**:
-    -   **Linux/Windows**: [mpv](https://mpv.io/)
-    -   **macOS**: [iina](https://iina.io/)
-    - **Android**: [vlc](https://play.google.com/store/apps/details?id=org.videolan.vlc)
-3.  **Downloader**:
-    -   [yt-dlp](https://github.com/yt-dlp/yt-dlp) - Required for downloading content.
+Luffy scrapes content from high-quality sources and leverages external tools for playback and downloading, providing a seamless terminal-based entertainment experience.
 
 ## Installation
 
-### Installation using Go
+### 1. Go Install (Recommended)
 
-```sh
-go install github.com/demonkingswarn/luffy@v1.0.2
+If you have Go installed, you can easily install Luffy:
+
+```bash
+go install github.com/demonkingswarn/luffy@latest
 ```
 
-### Building from Source
+### 2. Build from Source
+
 1.  Clone the repository:
     ```bash
     git clone https://github.com/demonkingswarn/luffy.git
@@ -44,42 +33,68 @@ go install github.com/demonkingswarn/luffy@v1.0.2
     ```
     *Ensure your `$GOPATH/bin` is in your system's `PATH`.*
 
+## Dependencies
+
+To use Luffy to its full potential, ensure you have the following installed:
+
+*   **[mpv](https://mpv.io/)**: Video Player (Linux/FreeBSD/Windows)
+*   **[iina](https://iina.io/)**: Video Player (macOS)
+*   **[vlc](https://www.videolan.org/vlc/download-android.html)**: Video Player (Android)
+*   **[yt-dlp](https://github.com/yt-dlp/yt-dlp)**: Required for downloading content.
+
 ## Usage
 
-The basic syntax is:
 ```bash
 luffy [query] [flags]
 ```
 
-### Examples
+`[query]` is the title you want to search for (e.g., "breaking bad", "dune", "one piece").
 
-**1. Interactive Search & Play**
-Search for a show, select the result, choose a season/episode, and pick an action (Play/Download) interactively:
+### Options
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `--action` | `-a` | Action to perform: `play` (default) or `download`. |
+| `--season` | `-s` | (Series only) Specify the season number. |
+| `--episodes` | `-e` | (Series only) Specify a single episode (`5`) or a range (`1-5`). |
+| `--help` | `-h` | Show help message and exit. |
+
+### 🎬 Examples
+
+**Search & Play a Movie**
+Search for a title and select interactively:
 ```bash
-luffy "one piece"
+luffy "dune"
 ```
 
-**2. Play Specific Episode**
-Skip the interactive selection for season and episode by providing flags:
+**Download a Movie**
 ```bash
-luffy "breaking bad" -s 1 -e 1 -a play
+luffy "dune" --action download
 ```
-*This plays Season 1, Episode 1 of the first search result for "breaking bad".*
 
-**3. Download a Range of Episodes**
+**Play a TV Episode**
+Directly play Season 1, Episode 1:
+```bash
+luffy "breaking bad" -s 1 -e 1
+```
+
+**Download a Range of Episodes**
 Download episodes 1 through 5 of Season 2:
 ```bash
 luffy "stranger things" -s 2 -e 1-5 -a download
 ```
 
-### Flags
+## Provider
 
-| Flag | Short | Description | Example |
-|------|-------|-------------|---------|
-| `--season` | `-s` | Specify the season number | `-s 1` |
-| `--episodes` | `-e` | Specify episode number or range | `-e 3` or `-e 1-5` |
-| `--action` | `-a` | Action to perform: `play` or `download` | `-a download` |
+| Website | Available Qualities | Content |
+|---------|---------------------|---------|
+| FlixHQ  | 720p, 1080p         | Movies, TV Series |
 
 ## Disclaimer
 
 This tool is for educational purposes only. The developers of this tool do not host any content and are not affiliated with the streaming services scraped. Please respect copyright laws in your jurisdiction.
+
+## Contributing
+
+Pull requests are welcome and appreciated. For major changes, please open an issue first to discuss what you would like to change.
+
