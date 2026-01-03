@@ -83,6 +83,9 @@ func GetEpisodes(id string, isSeason bool, client *http.Client) ([]Episode, erro
 	var episodes []Episode
 	doc.Find(".nav-item a").Each(func(i int, s *goquery.Selection) {
 		id := s.AttrOr("data-id", "")
+		if id == "" {
+			id = s.AttrOr("data-linkid", "")
+		}
 		name := strings.TrimSpace(s.AttrOr("title", s.Text()))
 		if name == "" {
 			name = s.Text()

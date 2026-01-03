@@ -119,11 +119,13 @@ var rootCmd = &cobra.Command{
 
 		} else {
 			// Movie logic
-			allEpisodes, err := core.GetEpisodes(mediaID, false, ctx.Client)
-			if err != nil || len(allEpisodes) == 0 {
+			// For movies, GetEpisodes returns the list of servers directly
+			servers, err := core.GetEpisodes(mediaID, false, ctx.Client)
+			if err != nil || len(servers) == 0 {
 				return fmt.Errorf("could not find movie info")
 			}
-			episodesToProcess = append(episodesToProcess, allEpisodes[0])
+			// Store the servers in episodesToProcess temporarily, but treat them as servers later
+			episodesToProcess = servers
 		}
 
 		// Determine action
@@ -135,21 +137,18 @@ var rootCmd = &cobra.Command{
 		}
 		currentAction = strings.ToLower(currentAction)
 
-		for _, ep := range episodesToProcess {
-			fmt.Printf("\nProcessing: %s\n", ep.Name)
-			
-			servers, err := core.GetServers(ep.ID, ctx.Client)
-			if err != nil {
-				fmt.Println("Error fetching servers:", err)
-				continue
-			}
-			if len(servers) == 0 {
-				fmt.Println("No servers found")
-				continue
-			}
+		if ctx.ContentType == core.Movie {
+			// Movie Processing
+			fmt.Printf("\nProcessing: %s\n", ctx.Title)
 
-			selectedServer := servers[0]
-			for _, s := range servers {
+			// episodesToProcess contains servers for movies
+			var selectedServer core.Episode // abusing Episode struct for Server info
+			if len(episodesToProcess) > 0 {
+				selectedServer = episodesToProcess[0]
+			}
+			
+			// Find preferred server
+			for _, s := range episodesToProcess {
 				if strings.Contains(strings.ToLower(s.Name), "vidcloud") {
 					selectedServer = s
 					break
@@ -158,31 +157,82 @@ var rootCmd = &cobra.Command{
 
 			link, err := core.GetLink(selectedServer.ID, ctx.Client)
 			if err != nil {
-				fmt.Println("Error getting link:", err)
-				continue
+				return fmt.Errorf("error getting link: %v", err)
 			}
 
 			fmt.Println("Decrypting stream...")
 			streamURL, subtitles, err := core.DecryptStream(link, ctx.Client)
 			if err != nil {
-				fmt.Printf("Decryption failed for %s: %v\n", ep.Name, err)
-				continue
+				return fmt.Errorf("decryption failed: %v", err)
 			}
 
 			switch currentAction {
 			case "play":
-				err = core.Play(streamURL, ctx.Title + " - " + ep.Name, core.FLIXHQ_BASE_URL, subtitles)
+				err = core.Play(streamURL, ctx.Title, core.FLIXHQ_BASE_URL, subtitles)
 				if err != nil {
 					fmt.Println("Error playing:", err)
 				}
 			case "download":
 				homeDir, _ := os.UserHomeDir()
-				err = core.Download(homeDir, ctx.Title + " - " + ep.Name, streamURL, core.FLIXHQ_BASE_URL, subtitles)
+				err = core.Download(homeDir, ctx.Title, streamURL, core.FLIXHQ_BASE_URL, subtitles)
 				if err != nil {
 					fmt.Println("Error downloading:", err)
 				}
 			default:
 				fmt.Println("Unknown action:", currentAction)
+			}
+
+		} else {
+			// Series Processing
+			for _, ep := range episodesToProcess {
+				fmt.Printf("\nProcessing: %s\n", ep.Name)
+
+				servers, err := core.GetServers(ep.ID, ctx.Client)
+				if err != nil {
+					fmt.Println("Error fetching servers:", err)
+					continue
+				}
+				if len(servers) == 0 {
+					fmt.Println("No servers found")
+					continue
+				}
+
+				selectedServer := servers[0]
+				for _, s := range servers {
+					if strings.Contains(strings.ToLower(s.Name), "vidcloud") {
+						selectedServer = s
+						break
+					}
+				}
+
+				link, err := core.GetLink(selectedServer.ID, ctx.Client)
+				if err != nil {
+					fmt.Println("Error getting link:", err)
+					continue
+				}
+
+				fmt.Println("Decrypting stream...")
+				streamURL, subtitles, err := core.DecryptStream(link, ctx.Client)
+				if err != nil {
+					fmt.Printf("Decryption failed for %s: %v\n", ep.Name, err)
+					continue
+				}
+
+				switch currentAction {
+				case "play":
+					err = core.Play(streamURL, ctx.Title+" - "+ep.Name, core.FLIXHQ_BASE_URL, subtitles)
+					if err != nil {
+						fmt.Println("Error playing:", err)
+					}
+				case "download":
+					homeDir, _ := os.UserHomeDir()
+					err = core.Download(homeDir, ctx.Title+" - "+ep.Name, streamURL, core.FLIXHQ_BASE_URL, subtitles)
+					if err != nil {
+						fmt.Println("Error downloading:", err)
+					}
+				default:
+					fmt.Println("Unknown action:", currentAction)
+				}
 			}
 		}
 
