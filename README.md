@@ -30,7 +30,7 @@
 
 ---
 
-![](./.assets/output.gif)
+![](./.assets/showcase.gif)
 
 ---
 
