@@ -37,13 +37,22 @@
 ## Overview
 
 - [Installation](#installation)
+    - [AUR](#1-aur) 
+    - [Go Install](#2-go-install)
+    - [Build from Source](#3-build-from-source)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
 - [Support](#support)
 
 ## Installation
 
-### 1. Go Install (Recommended)
+### 1. AUR
+
+```sh
+paru -S luffy-bin
+```
+
+### 2. Go Install
 
 If you have Go installed, you can easily install Luffy:
 
@@ -51,7 +60,7 @@ If you have Go installed, you can easily install Luffy:
 go install github.com/demonkingswarn/luffy@v1.0.5
 ```
 
-### 2. Build from Source
+### 3. Build from Source
 
 1.  Clone the repository:
     ```bash
