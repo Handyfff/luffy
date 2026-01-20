@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/demonkingswarn/luffy/core"
 	"github.com/spf13/cobra"
@@ -13,12 +14,14 @@ var (
 	seasonFlag   int
 	episodeFlag  string
 	actionFlag   string
+	showImageFlag bool
 )
 
 func init() {
 	rootCmd.Flags().IntVarP(&seasonFlag, "season", "s", 0, "Specify season number")
 	rootCmd.Flags().StringVarP(&episodeFlag, "episodes", "e", "", "Specify episode or range (e.g. 1, 1-5)")
 	rootCmd.Flags().StringVarP(&actionFlag, "action", "a", "", "Action to perform (play, download)")
+	rootCmd.Flags().BoolVar(&showImageFlag, "show-image", false, "Show poster preview using chafa")
 }
 
 var rootCmd = &cobra.Command{
@@ -49,12 +52,35 @@ var rootCmd = &cobra.Command{
 			titles = append(titles, fmt.Sprintf("[%s] %s", r.Type, r.Title))
 		}
 
-		idx := core.Select("Results:", titles)
+		var idx int
+		if showImageFlag {
+			fmt.Println("Downloading posters...")
+			var wg sync.WaitGroup
+			for _, r := range results {
+				wg.Add(1)
+				go func(r core.SearchResult) {
+					defer wg.Done()
+					core.DownloadPoster(r.Poster, r.Title)
+				}(r)
+			}
+			wg.Wait()
+
+			cacheDir, _ := core.GetCacheDir()
+			previewCmd := fmt.Sprintf("chafa -f sixel \"%s/$(echo {} | sed -E 's/^\\[.*\\] //' | sed -E 's/[^a-zA-Z0-9]+/_/g').jpg\"", cacheDir)
+			idx = core.SelectWithPreview("Results:", titles, previewCmd)
+		} else {
+			idx = core.Select("Results:", titles)
+		}
 		selected := results[idx]
 
 		ctx.Title = selected.Title
 		ctx.URL = selected.URL
 		ctx.ContentType = selected.Type
+
+		if showImageFlag {
+			// Clean cache after selection is made and we don't need previews anymore
+			go core.CleanCache()
+		}
 
 		fmt.Println("Selected:", ctx.Title)
 

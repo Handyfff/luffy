@@ -31,6 +31,7 @@ func SearchContent(query string, client *http.Client) ([]SearchResult, error) {
 
 		title := s.Find("h2.film-name a").AttrOr("title", "Unknown")
 		href := s.Find("div.film-poster a").AttrOr("href", "")
+		poster := s.Find("img.film-poster-img").AttrOr("data-src", "")
 		typeStr := strings.TrimSpace(s.Find("span.fdi-type").Text())
 		
 		mediaType := Movie
@@ -40,9 +41,10 @@ func SearchContent(query string, client *http.Client) ([]SearchResult, error) {
 
 		if href != "" {
 			results = append(results, SearchResult{
-				Title: title,
-				URL:   FLIXHQ_BASE_URL + href,
-				Type:  mediaType,
+				Title:  title,
+				URL:    FLIXHQ_BASE_URL + href,
+				Type:   mediaType,
+				Poster: poster,
 			})
 		}
 		return true

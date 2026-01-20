@@ -48,3 +48,43 @@ func Select(label string, items []string) int {
 	fmt.Print("\033[H\033[2J") // Clear screen
 	return res.(int)
 }
+
+func SelectWithPreview(label string, items []string, previewCmd string) int {
+	components := make([]interface{}, len(items))
+	for i := range items {
+		components[i] = i
+	}
+
+	cfg := LoadConfig()
+	prompt := label + "> "
+	
+	opts := &fzf.Options{
+		PromptString: &prompt,
+	}
+	
+	if previewCmd != "" {
+		opts.Preview = &previewCmd
+	}
+
+	res, _, err := fzf.FzfPrompt(
+		components,
+		func(i interface{}) string {
+			return items[i.(int)]
+		},
+		cfg.FzfPath,
+		opts,
+	)
+
+	if err != nil {
+		fmt.Println("Selection cancelled or failed:", err)
+		os.Exit(1)
+	}
+
+	if res == nil {
+		fmt.Println("No selection made")
+		os.Exit(1)
+	}
+
+	fmt.Print("\033[H\033[2J") // Clear screen
+	return res.(int)
+}

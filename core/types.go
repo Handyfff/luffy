@@ -20,9 +20,10 @@ const (
 )
 
 type SearchResult struct {
-	Title string
-	URL   string
-	Type  MediaType
+	Title  string
+	URL    string
+	Type   MediaType
+	Poster string
 }
 
 type Season struct {
