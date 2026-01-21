@@ -57,7 +57,7 @@ paru -S luffy-bin
 If you have Go installed, you can easily install Luffy:
 
 ```bash
-go install github.com/demonkingswarn/luffy@v1.0.5
+go install github.com/demonkingswarn/luffy@v1.0.6
 ```
 
 ### 3. Build from Source
