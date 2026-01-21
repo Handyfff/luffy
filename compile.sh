@@ -1,4 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-go build -ldflags="-s -w" -o luffy
-upx --best --lzma luffy
+platform=$(uname -s)
+
+if [[ "$platform" == "Linux" ]]; then
+  go build -ldflags="-s -w" -o luffy
+  upx --best --lzma luffy
+else
+  go build -o luffy
+fi
