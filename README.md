@@ -37,12 +37,13 @@
 ## Overview
 
 - [Installation](#installation)
-    - [AUR (Arch Linux)](#1-aur-arch-linux) 
-    - [Homebrew (MacOS)](#2-homebrew-macos)
-    - [Scoop (Windows)](#3-scoop-windows)
-    - [Go Install](#4-go-install)
-    - [Build from Source](#5-build-from-source)
-    - [Android Installation](#6-android-installation)
+    - [AUR (Arch Linux)](#1-aur-arch-linux)
+    - [Flake (NixOS)](#2-flake-nixos)
+    - [Homebrew (MacOS)](#3-homebrew-macos)
+    - [Scoop (Windows)](#4-scoop-windows)
+    - [Go Install](#5-go-install)
+    - [Build from Source](#6-build-from-source)
+    - [Android Installation](#7-android-installation)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
 - [Support](#support)
@@ -55,7 +56,29 @@
 paru -S luffy-bin
 ```
 
-### 2. Homebrew (MacOS)
+### 2. Flake (NixOS)
+
+Add this to your flake.nix
+
+```nix
+inputs.luffy.url = "github:demonkingswarn/luffy";
+```
+
+Add this to configuration.nix
+
+```nix
+environment.systemPackages = [
+    inputs.luffy.packages.<architecture>.luffy
+];
+```
+
+Or for run the script once, use
+
+```nix
+nix run github:demonkingswarn/luffy#luffy
+```
+
+### 3. Homebrew (MacOS)
 
 ```sh
 brew tap gamedevCloudy/tools
@@ -63,7 +86,7 @@ brew install --cask iina
 brew install luffy
 ```
 
-### 3. Scoop (Windows)
+### 4. Scoop (Windows)
 
 Make sure you have [scoop.sh](https://scoop.sh) installed on your system.
 
@@ -76,7 +99,7 @@ scoop install luffy
 > [!IMPORTANT]
 > On windows if you want to use the `--show-image`, you need to use the `wezterm` terminal emulator. It is installed as a dependency on windows.
 
-### 4. Go Install
+### 5. Go Install
 
 If you have Go installed, you can easily install Luffy:
 
@@ -84,7 +107,7 @@ If you have Go installed, you can easily install Luffy:
 go install github.com/demonkingswarn/luffy@v1.0.6
 ```
 
-### 5. Build from Source
+### 6. Build from Source
 
 1.  Clone the repository:
     ```bash
@@ -98,7 +121,7 @@ go install github.com/demonkingswarn/luffy@v1.0.6
     ```
     *Ensure your `$GOPATH/bin` is in your system's `PATH`.*
 
-### 6. Android Installation
+### 7. Android Installation
 
 Install termux [(Guide)](https://termux.com/)
 
