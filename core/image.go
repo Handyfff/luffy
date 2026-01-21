@@ -98,7 +98,8 @@ func CleanCache() error {
 }
 
 func PreviewPoster(path string) error {
-	cmd := exec.Command("chafa", "-f", "sixel", path)
+	cfg := LoadConfig()
+	cmd := exec.Command("chafa", "-f", cfg.ImageBackend, path)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

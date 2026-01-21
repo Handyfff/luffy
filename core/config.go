@@ -8,14 +8,16 @@ import (
 )
 
 type Config struct {
-	FzfPath string
-	Player  string
+	FzfPath      string
+	Player       string
+	ImageBackend string
 }
 
 func LoadConfig() *Config {
 	config := &Config{
-		FzfPath: "fzf", // Default
-		Player:  "mpv", // Default player
+		FzfPath:      "fzf",   // Default
+		Player:       "mpv",   // Default player
+		ImageBackend: "sixel", // Default image backend
 	}
 
 	home, err := os.UserHomeDir()
@@ -47,6 +49,8 @@ func LoadConfig() *Config {
 				config.FzfPath = value
 			} else if key == "player" {
 				config.Player = value
+			} else if key == "image_backend" {
+				config.ImageBackend = value
 			}
 		}
 	}

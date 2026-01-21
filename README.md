@@ -87,6 +87,12 @@ go install github.com/demonkingswarn/luffy@v1.0.5
 > To be able to see the images, you need terminal emulators which support the sixel image protocol.
 >
 > For ex: kitty, alacritty, ghostty, wezterm, foot
+>
+> Also note that, if you are using `kitty` or `ghostty` then you need to add the following in the config file:
+> ```conf
+> image_backend = "kitty"
+> ```
+> config file can be found at  `$HOME/.config/luffy/conf`
 
 ## Usage
 

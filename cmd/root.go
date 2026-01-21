@@ -65,8 +65,9 @@ var rootCmd = &cobra.Command{
 			}
 			wg.Wait()
 
+			cfg := core.LoadConfig()
 			cacheDir, _ := core.GetCacheDir()
-			previewCmd := fmt.Sprintf("chafa -f sixel \"%s/$(echo {} | sed -E 's/^\\[.*\\] //' | sed -E 's/[^a-zA-Z0-9]+/_/g').jpg\"", cacheDir)
+			previewCmd := fmt.Sprintf("chafa -f %s \"%s/$(echo {} | sed -E 's/^\\[.*\\] //' | sed -E 's/[^a-zA-Z0-9]+/_/g').jpg\"", cfg.ImageBackend, cacheDir)
 			idx = core.SelectWithPreview("Results:", titles, previewCmd)
 		} else {
 			idx = core.Select("Results:", titles)
