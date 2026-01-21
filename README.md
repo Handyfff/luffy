@@ -92,6 +92,10 @@ go install github.com/demonkingswarn/luffy@v1.0.6
 > ```conf
 > image_backend = "kitty"
 > ```
+> And if you are on alacritty, add this:
+> ```conf
+> image_backend = "symbols"
+> ```
 > config file can be found at  `$HOME/.config/luffy/conf`
 
 ## Usage
