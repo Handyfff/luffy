@@ -37,22 +37,32 @@
 ## Overview
 
 - [Installation](#installation)
-    - [AUR](#1-aur) 
-    - [Go Install](#2-go-install)
-    - [Build from Source](#3-build-from-source)
+    - [AUR](#1-aur-arch-linux) 
+    - [Homebrew](#2-homebrew-macos)
+    - [Go Install](#3-go-install)
+    - [Build from Source](#4-build-from-source)
+    - [Android Installation](#5-android-installation)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
 - [Support](#support)
 
 ## Installation
 
-### 1. AUR
+### 1. AUR (Arch Linux)
 
 ```sh
 paru -S luffy-bin
 ```
 
-### 2. Go Install
+### 2. Homebrew (MacOS)
+
+```sh
+brew tap gamedevCloudy/tools
+brew install --cask iina
+brew install luffy
+```
+
+### 3. Go Install
 
 If you have Go installed, you can easily install Luffy:
 
@@ -60,7 +70,7 @@ If you have Go installed, you can easily install Luffy:
 go install github.com/demonkingswarn/luffy@v1.0.6
 ```
 
-### 3. Build from Source
+### 4. Build from Source
 
 1.  Clone the repository:
     ```bash
@@ -74,6 +84,17 @@ go install github.com/demonkingswarn/luffy@v1.0.6
     ```
     *Ensure your `$GOPATH/bin` is in your system's `PATH`.*
 
+### 5. Android Installation
+
+Install termux [(Guide)](https://termux.com/)
+
+```sh
+pkg up -y
+pkg in golang fzf python-yt-dlp
+go install github.com/demonkingswarn/luffy@v1.0.6
+```
+
+
 # Dependencies
 
 - [`mpv`](https://mpv.io) - Video Player
@@ -86,15 +107,12 @@ go install github.com/demonkingswarn/luffy@v1.0.6
 > [!IMPORTANT]
 > To be able to see the images, you need terminal emulators which support the sixel image protocol.
 >
-> For ex: kitty, alacritty, ghostty, wezterm, foot
+> For ex: kitty, ghostty, wezterm, foot
 >
 > Also note that, if you are using `kitty` or `ghostty` then you need to add the following in the config file:
 > ```conf
 > image_backend = "kitty"
 > ```
-> And if you are on alacritty, add this:
-> ```conf
-> image_backend = "symbols"
 > ```
 > config file can be found at  `$HOME/.config/luffy/conf`
 
