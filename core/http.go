@@ -12,7 +12,6 @@ func NewRequest(method, url string) (*http.Request, error) {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "luffy/1.0")
-	req.Header.Set("Referer", "https://flixhq.to/")
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	return req, nil
 }

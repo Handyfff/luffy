@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/demonkingswarn/luffy/core"
+	"github.com/demonkingswarn/luffy/core/providers"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,7 @@ var rootCmd = &cobra.Command{
 		ctx := &core.Context{
 			Client: client,
 		}
+		provider := providers.NewFlixHQ(client)
 
 		if len(args) == 0 {
 			ctx.Query = core.Prompt("Search")
@@ -42,7 +44,7 @@ var rootCmd = &cobra.Command{
 			ctx.Query = strings.Join(args, " ")
 		}
 
-		results, err := core.SearchContent(ctx.Query, ctx.Client)
+		results, err := provider.Search(ctx.Query)
 		if err != nil {
 			return err
 		}
@@ -85,7 +87,7 @@ var rootCmd = &cobra.Command{
 
 		fmt.Println("Selected:", ctx.Title)
 
-		mediaID, err := core.GetMediaID(ctx.URL, ctx.Client)
+		mediaID, err := provider.GetMediaID(ctx.URL)
 		if err != nil {
 			return err
 		}
@@ -93,7 +95,7 @@ var rootCmd = &cobra.Command{
 		var episodesToProcess []core.Episode
 
 		if ctx.ContentType == core.Series {
-			seasons, err := core.GetSeasons(mediaID, ctx.Client)
+			seasons, err := provider.GetSeasons(mediaID)
 			if err != nil {
 				return err
 			}
@@ -116,7 +118,7 @@ var rootCmd = &cobra.Command{
 				selectedSeason = seasons[sIdx]
 			}
 
-			allEpisodes, err := core.GetEpisodes(selectedSeason.ID, true, ctx.Client)
+			allEpisodes, err := provider.GetEpisodes(selectedSeason.ID, true)
 			if err != nil {
 				return err
 			}
@@ -148,7 +150,7 @@ var rootCmd = &cobra.Command{
 		} else {
 			// Movie logic
 			// For movies, GetEpisodes returns the list of servers directly
-			servers, err := core.GetEpisodes(mediaID, false, ctx.Client)
+			servers, err := provider.GetEpisodes(mediaID, false)
 			if err != nil || len(servers) == 0 {
 				return fmt.Errorf("could not find movie info")
 			}
@@ -183,7 +185,7 @@ var rootCmd = &cobra.Command{
 				}
 			}
 
-			link, err := core.GetLink(selectedServer.ID, ctx.Client)
+			link, err := provider.GetLink(selectedServer.ID)
 			if err != nil {
 				return fmt.Errorf("error getting link: %v", err)
 			}
@@ -215,7 +217,7 @@ var rootCmd = &cobra.Command{
 			for _, ep := range episodesToProcess {
 				fmt.Printf("\nProcessing: %s\n", ep.Name)
 
-				servers, err := core.GetServers(ep.ID, ctx.Client)
+				servers, err := provider.GetServers(ep.ID)
 				if err != nil {
 					fmt.Println("Error fetching servers:", err)
 					continue
@@ -233,7 +235,7 @@ var rootCmd = &cobra.Command{
 					}
 				}
 
-				link, err := core.GetLink(selectedServer.ID, ctx.Client)
+				link, err := provider.GetLink(selectedServer.ID)
 				if err != nil {
 					fmt.Println("Error getting link:", err)
 					continue
