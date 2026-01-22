@@ -189,3 +189,26 @@ You can contact the developer directly via this <a href="mailto:swarn@demonkings
 
 If you run into issues or want to request a new feature, you are encouraged to make a GitHub issue, won't bite you, trust me.
 
+
+# Providers
+
+Luffy uses 4 main providers, which you can easily change between by specifying them in the config file: `$HOME/.config/luffy/conf`
+
+- flixhq:
+    ```conf
+    provider = "flixhq"
+    ```
+- sflix:
+    ```conf
+    provider = "sflix"
+    ```
+- hdrezka:
+    ```conf
+    provider = "hdrezka"
+    ```
+- braflix:
+    ```conf
+    provider = "braflix"
+    ```
+
+Also note that `flixhq` is the default provider.
