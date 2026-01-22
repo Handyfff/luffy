@@ -112,7 +112,7 @@ Install termux [(Guide)](https://termux.com/)
 ```sh
 pkg up -y
 pkg in golang fzf python-yt-dlp
-go install github.com/demonkingswarn/luffy@v1.0.6
+go install github.com/demonkingswarn/luffy@v1.0.7
 ```
 
 
