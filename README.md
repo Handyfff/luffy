@@ -89,7 +89,7 @@ scoop install luffy
 If you have Go installed, you can easily install Luffy:
 
 ```bash
-go install github.com/demonkingswarn/luffy@v1.0.8
+go install github.com/demonkingswarn/luffy@v1.0.9
 ```
 
 ### 6. Build from Source
@@ -113,7 +113,7 @@ Install termux [(Guide)](https://termux.com/)
 ```sh
 pkg up -y
 pkg in golang fzf python-yt-dlp
-go install github.com/demonkingswarn/luffy@v1.0.8
+go install github.com/demonkingswarn/luffy@v1.0.9
 ```
 
 
@@ -132,10 +132,10 @@ go install github.com/demonkingswarn/luffy@v1.0.8
 > For ex: kitty, ghostty, wezterm, foot
 >
 > Also note that, if you are using `kitty` or `ghostty` then you need to add the following in the config file:
-> ```conf
-> image_backend = "kitty"
+> ```yaml
+> image_backend: kitty
 > ```
-> config file can be found at  `$HOME/.config/luffy/conf`
+> config file can be found at  `$HOME/.config/luffy/config.yaml`
 
 ## Usage
 
@@ -155,6 +155,7 @@ luffy [query] [flags]
 | `--episodes` | `-e` | (Series only) Specify a single episode (`5`) or a range (`1-5`). |
 | `--help` | `-h` | Show help message and exit. |
 | `--show-image` | NA | Show posters preview. |
+| `--providers` | `-p` | Select provider. |
 
 
 ### 🎬 Examples
@@ -193,37 +194,37 @@ If you run into issues or want to request a new feature, you are encouraged to m
 
 # Providers
 
-Luffy uses three main providers, which you can easily change between by specifying them in the config file: `$HOME/.config/luffy/conf`
+Luffy uses three main providers, which you can easily change between by specifying them in the config file: `$HOME/.config/luffy/config.yaml`
 
 - flixhq:
-    ```conf
-    provider = "flixhq"
+    ```yaml
+    provider: flixhq
     ```
 - brocoflix:
-    ```conf
-    provider = "brocoflix"
+    ```yaml
+    provider: brocoflix
     ```
 - xprime:
-    ```conf
-    provider = "xprime"
+    ```yaml
+    provider: xprime
     ```
     **NOTE**: `brocoflix` & `xprime` doesn't return any subtitle urls, but their quality is much better.
 
 There are three experimental providers, using these may not always work. These are:
 
 - sflix:
-    ```conf
-    provider = "sflix"
+    ```yaml
+    provider: sflix
     ```
 
 - braflix:
-    ```conf
-    provider = "braflix"
+    ```yaml
+    provider: braflix
     ```
 
 - hdrezka:
-    ```conf
-    provider = "hdrezka"
+    ```yaml
+    provider: hdrezka
     ```
 
 Also note that `flixhq` is the default provider.
