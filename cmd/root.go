@@ -22,6 +22,7 @@ var (
 	showImageFlag bool
 	backendFlag   string
 	cacheFlag     string
+	providerFlag  string
 )
 
 const USER_AGENT = "luffy/1.0.8"
@@ -31,6 +32,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&episodeFlag, "episodes", "e", "", "Specify episode or range (e.g. 1, 1-5)")
 	rootCmd.Flags().StringVarP(&actionFlag, "action", "a", "", "Action to perform (play, download)")
 	rootCmd.Flags().BoolVar(&showImageFlag, "show-image", false, "Show poster preview using chafa")
+	rootCmd.Flags().StringVarP(&providerFlag, "provider", "p", "", "Specify provider")
 
 	rootCmd.AddCommand(previewCmd)
 	previewCmd.Flags().StringVar(&backendFlag, "backend", "sixel", "Image backend")
@@ -50,16 +52,23 @@ var rootCmd = &cobra.Command{
 		}
 
 		cfg := core.LoadConfig()
+		var providerName string
+		if providerFlag != "" {
+			providerName = providerFlag
+		} else {
+			providerName = cfg.Provider
+		}
+
 		var provider core.Provider
-		if strings.EqualFold(cfg.Provider, "sflix") {
+		if strings.EqualFold(providerName, "sflix") {
 			provider = providers.NewSflix(client)
-		} else if strings.EqualFold(cfg.Provider, "hdrezka") {
+		} else if strings.EqualFold(providerName, "hdrezka") {
 			provider = providers.NewHDRezka(client)
-		} else if strings.EqualFold(cfg.Provider, "braflix") {
+		} else if strings.EqualFold(providerName, "braflix") {
 			provider = providers.NewBraflix(client)
-		} else if strings.EqualFold(cfg.Provider, "brocoflix") {
+		} else if strings.EqualFold(providerName, "brocoflix") {
 			provider = providers.NewBrocoflix(client)
-		} else if strings.EqualFold(cfg.Provider, "xprime") {
+		} else if strings.EqualFold(providerName, "xprime") {
 			provider = providers.NewXPrime(client)
 		} else {
 			provider = providers.NewFlixHQ(client)
@@ -196,11 +205,11 @@ var rootCmd = &cobra.Command{
 			var err error
 
 			referer := link
-			if strings.EqualFold(cfg.Provider, "hdrezka") {
+			if strings.EqualFold(providerName, "hdrezka") {
 				referer = ctx.URL
 			}
 
-			if strings.EqualFold(cfg.Provider, "hdrezka") {
+			if strings.EqualFold(providerName, "hdrezka") {
 				streams := strings.Split(link, ",")
 				bestQuality := 0
 				for _, s := range streams {
@@ -241,7 +250,7 @@ var rootCmd = &cobra.Command{
 					referer = decryptedReferer
 				}
 
-				if strings.EqualFold(cfg.Provider, "sflix") || strings.EqualFold(cfg.Provider, "braflix") || strings.EqualFold(cfg.Provider, "xprime") {
+				if strings.EqualFold(providerName, "sflix") || strings.EqualFold(providerName, "braflix") || strings.EqualFold(providerName, "xprime") {
 					referer = link
 				}
 			}
@@ -277,7 +286,7 @@ var rootCmd = &cobra.Command{
 			}
 
 			for _, s := range episodesToProcess {
-				if strings.EqualFold(cfg.Provider, "hdrezka") {
+				if strings.EqualFold(providerName, "hdrezka") {
 					selectedServer = s
 					break
 				}
@@ -310,7 +319,7 @@ var rootCmd = &cobra.Command{
 				}
 
 				selectedServer := servers[0]
-				if !strings.EqualFold(cfg.Provider, "hdrezka") {
+				if !strings.EqualFold(providerName, "hdrezka") {
 					for _, s := range servers {
 						if strings.Contains(strings.ToLower(s.Name), "vidcloud") {
 							selectedServer = s
@@ -349,11 +358,9 @@ var previewCmd = &cobra.Command{
 		}
 		title := strings.Join(args, " ")
 
-		// Go's regex to strip prefix [Movie] or [Series]
 		rePrefix := regexp.MustCompile(`^\[.*\] `)
 		cleanTitle := rePrefix.ReplaceAllString(title, "")
 
-		// Go's regex to sanitize (match core/image.go)
 		reSanitize := regexp.MustCompile(`[^a-zA-Z0-9]+`)
 		safeTitle := reSanitize.ReplaceAllString(cleanTitle, "_")
 
