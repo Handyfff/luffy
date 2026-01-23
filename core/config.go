@@ -1,18 +1,18 @@
 package core
 
 import (
-	"bufio"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	FzfPath      string
-	Player       string
-	ImageBackend string
-	Provider     string
-	DlPath       string
+	FzfPath      string `yaml:"fzf_path"`
+	Player       string `yaml:"player"`
+	ImageBackend string `yaml:"image_backend"`
+	Provider     string `yaml:"provider"`
+	DlPath       string `yaml:"dl_path"`
 }
 
 func LoadConfig() *Config {
@@ -29,37 +29,23 @@ func LoadConfig() *Config {
 		return config
 	}
 
-	configPath := filepath.Join(home, ".config", "luffy", "conf")
-	file, err := os.Open(configPath)
+	configPath := filepath.Join(home, ".config", "luffy", "config.yaml")
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		// Config file doesn't exist or can't be opened, use defaults
+		// Config file doesn't exist or can't be read, use defaults
 		return config
 	}
-	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 2 {
-			key := strings.TrimSpace(parts[0])
-			value := strings.Trim(strings.TrimSpace(parts[1]), "\"'")
-
-			if key == "fzf_path" {
-				config.FzfPath = value
-			} else if key == "player" {
-				config.Player = value
-			} else if key == "image_backend" {
-				config.ImageBackend = value
-			} else if key == "provider" {
-				config.Provider = value
-			} else if key == "dl_path" {
-				config.DlPath = value
-			}
+	// Parse YAML into config struct
+	err = yaml.Unmarshal(data, config)
+	if err != nil {
+		// YAML parsing failed, return defaults
+		return &Config{
+			FzfPath:      "fzf",
+			Player:       "mpv",
+			ImageBackend: "sixel",
+			Provider:     "flixhq",
+			DlPath:       "",
 		}
 	}
 

@@ -1,0 +1,17 @@
+# Luffy Configuration File
+# Copy this file to ~/.config/luffy/config.yaml and customize as needed
+
+# Path to fzf binary (default: fzf)
+fzf_path: fzf
+
+# Image backend for displaying images in terminal (default: sixel)
+# Options: sixel, kitty, iterm2, etc.
+image_backend: sixel
+
+# Provider for anime sources (default: flixhq)
+# Options: flixhq, gogoanime, etc.
+provider: flixhq
+
+# Download path for saved videos (default: user's home directory)
+# Leave empty to use home directory
+dl_path: "/home/swarn/dl"
