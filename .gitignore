@@ -1,4 +1,3 @@
-go.sum
-luffy
-luffy.exe
-luffy_macos
+luffy.amd64
+luffy-aamd64.exe
+luffy-macos.aarch64
