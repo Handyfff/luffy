@@ -121,7 +121,7 @@ go install github.com/demonkingswarn/luffy@v1.0.10
 
 - [`mpv`](https://mpv.io) - Video Player for Linux and Windows
 - [`vlc`](https://www.videolan.org/vlc/) - Alternate video player for Linux and Windows
-- [`iina`](https://iina.io) - Alternate video player for MacOS
+- [`iina`](https://iina.io) - Video Player for MacOS
 - [`vlc-android`](https://play.google.com/store/apps/details?id=org.videolan.vlc) - Video Player for Android
 - [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) - Download manager
 - [`fzf`](https://github.com/junegunn/fzf) - For selection menu
