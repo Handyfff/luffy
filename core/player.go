@@ -69,7 +69,32 @@ func Play(url, title, referer, userAgent string, subtitles []string) error {
 
 	default:
 		cfg := LoadConfig()
-		if cfg.Player == "mpv" {
+		if cfg.Player == "vlc" {
+			vlc_executable := "vlc"
+			if runtime.GOOS == "windows" {
+				vlc_executable = "vlc.exe"
+			}
+
+			args := []string{
+				url,
+				fmt.Sprintf("--http-referrer=%s", referer),
+				fmt.Sprintf("--http-user-agent=%s", userAgent),
+				fmt.Sprintf("--meta-title=Playing %s", title),
+			}
+			for _, sub := range subtitles {
+				if sub != "" {
+					// Use --input-slave for remote subtitle URLs
+					if strings.HasPrefix(sub, "http://") || strings.HasPrefix(sub, "https://") {
+						args = append(args, fmt.Sprintf("--input-slave=%s", sub))
+					} else {
+						args = append(args, fmt.Sprintf("--sub-file=%s", sub))
+					}
+				}
+			}
+
+			cmd = exec.Command(vlc_executable, args...)
+		} else {
+			// Default to mpv
 			args := []string{
 				url,
 				fmt.Sprintf("--referrer=%s", referer),
