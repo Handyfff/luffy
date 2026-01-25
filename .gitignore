@@ -1,8 +1,2 @@
-luffy.amd64
-luffy.rv64
-luffy.aarch64
-luffy-amd64.exe
-luffy-aarch64.exe
-luffy-macos.aarch64
-luffy-macos.amd64
-luffy-android.aarch64
+luffy.*
+luffy-*.*

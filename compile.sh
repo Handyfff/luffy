@@ -16,3 +16,5 @@ if [[ "$platform" == "Linux" ]]; then
 else
   go build -o luffy-macos.aarch64
 fi
+
+# GOOS=linux GOARCH=riscv64 CGO_ENABLED=0 go build -ldflags="-s -w" -o luffy.rv64
