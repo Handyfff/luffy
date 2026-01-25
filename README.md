@@ -112,8 +112,9 @@ Install termux [(Guide)](https://termux.com/)
 
 ```sh
 pkg up -y
-pkg in golang fzf python-yt-dlp
-go install github.com/demonkingswarn/luffy@v1.0.11
+pkg in fzf python-yt-dlp
+curl -sL "https://github.com/DemonKingSwarn/luffy/releases/download/v1.0.11/luffy-android.aarch64" -o $PREFIX/bin/luffy
+chmod +x $PREFIX/bin/luffy
 ```
 
 
