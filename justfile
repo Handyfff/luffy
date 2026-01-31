@@ -1,41 +1,43 @@
+# Project settings
+binary_name := "luffy"
+flags       := "-s -w"
+build_dir   := "builds"
+
 build: windows-amd64 windows-386 windows-arm linux-amd64 linux-386 linux-arm linux-risc mac-arm mac-intel freebsd-amd64 freebsd-386
 
-windows-amd64:
-  GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-windows-amd64.exe
-  upx --best --lzma builds/luffy-windows-amd64.exe
+_build os arch ext="":
+    @echo "Building {{os}}/{{arch}}..."
+    mkdir -p {{build_dir}}
+    GOOS={{os}} GOARCH={{arch}} CGO_ENABLED=0 go build -ldflags={{quote(flags)}} -o {{build_dir}}/{{binary_name}}-{{os}}-{{arch}}{{ext}}
 
-windows-386:
-  GOOS=windows GOARCH=386 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-windows-386.exe
-  upx --best --lzma builds/luffy-windows-386.exe
+_compress path:
+    @upx --best --lzma {{path}} || echo "UPX skip: {{path}}"
 
-windows-arm:
-  GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-windows-arm64.exe
-  
-linux-amd64:
-  GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-linux-amd64
-  upx --best --lzma builds/luffy-linux-amd64
+# Platform Recipes
+windows-amd64: (_build "windows" "amd64" ".exe")
+    @just _compress {{build_dir}}/{{binary_name}}-windows-amd64.exe
 
-linux-386:
-  GOOS=linux GOARCH=386 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-linux-386
-  upx --best --lzma builds/luffy-linux-386
+windows-386:   (_build "windows" "386" ".exe")
+    @just _compress {{build_dir}}/{{binary_name}}-windows-386.exe
 
-linux-arm:
-  GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-linux-arm64
-  upx --best --lzma builds/luffy-linux-arm64
+windows-arm:   (_build "windows" "arm64" ".exe")
 
-linux-risc:
-  GOOS=linux GOARCH=riscv64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-linux-riscv64
-  upx --best --lzma builds/luffy-linux-riscv64
+linux-amd64:   (_build "linux" "amd64")
+    @just _compress {{build_dir}}/{{binary_name}}-linux-amd64
 
-mac-arm:
-  GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-mac-arm64
+linux-386:     (_build "linux" "386")
+    @just _compress {{build_dir}}/{{binary_name}}-linux-386
 
-mac-intel:
-  GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-mac-amd64
+linux-arm:     (_build "linux" "arm64")
+    @just _compress {{build_dir}}/{{binary_name}}-linux-arm64
 
-freebsd-amd64:
-  GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-freebsd-amd64
+linux-risc:    (_build "linux" "riscv64")
+    @just _compress {{build_dir}}/{{binary_name}}-linux-riscv64
 
-freebsd-386:
-  GOOS=freebsd GOARCH=386 CGO_ENABLED=0 go build -ldflags="-s -w" -o builds/luffy-freebsd-386
+mac-arm:       (_build "darwin" "arm64")
+mac-intel:     (_build "darwin" "amd64")
+freebsd-amd64: (_build "freebsd" "amd64")
+freebsd-386:   (_build "freebsd" "386")
 
+clean:
+    rm -rf {{build_dir}}
