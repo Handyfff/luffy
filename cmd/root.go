@@ -136,6 +136,13 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
+		// For sflix, append media type to mediaID to help with server detection
+		// Format: "mediaID|type" (e.g., "39506|series" or "39506|movie")
+		// Braflix doesn't need this as it uses the same endpoint for both
+		if strings.EqualFold(providerName, "sflix") {
+			mediaID = mediaID + "|" + string(ctx.ContentType)
+		}
+
 		var episodesToProcess []core.Episode
 
 		if ctx.ContentType == core.Series {
@@ -269,8 +276,6 @@ var rootCmd = &cobra.Command{
 					} else {
 						referer = link
 					}
-				} else if strings.EqualFold(providerName, "xprime") {
-					referer = link
 				}
 			}
 

@@ -58,11 +58,19 @@ func (s *Sflix) Search(query string) ([]core.SearchResult, error) {
 		title := sel.Find("h2.film-name a").AttrOr("title", "Unknown")
 		href := sel.Find("div.film-poster a").AttrOr("href", "")
 		poster := sel.Find("img.film-poster-img").AttrOr("data-src", "")
-		typeStr := strings.TrimSpace(sel.Find("span.fdi-type").Text())
+		// Get type from the strong tag inside fdi-item (e.g., "TV" or "Movie")
+		typeStr := strings.TrimSpace(sel.Find("span.fdi-item strong").Text())
 
 		mediaType := core.Movie
 		if strings.EqualFold(typeStr, "TV") || strings.EqualFold(typeStr, "Series") {
 			mediaType = core.Series
+		}
+
+		// Also check URL path as fallback (/tv/ vs /movie/)
+		if strings.Contains(href, "/tv/") {
+			mediaType = core.Series
+		} else if strings.Contains(href, "/movie/") {
+			mediaType = core.Movie
 		}
 
 		if href != "" {
@@ -111,11 +119,14 @@ func (s *Sflix) GetMediaID(url string) (string, error) {
 }
 
 func (s *Sflix) GetSeasons(mediaID string) ([]core.Season, error) {
-	// Check if mediaID contains type prefix
-	var actualMediaID string
+	// Parse mediaID format: "id" or "id|type" or "id|type|extra"
+	var actualMediaID, mediaType string
 	if strings.Contains(mediaID, "|") {
 		parts := strings.Split(mediaID, "|")
 		actualMediaID = parts[0]
+		if len(parts) > 1 {
+			mediaType = parts[1]
+		}
 	} else {
 		actualMediaID = mediaID
 	}
@@ -138,9 +149,14 @@ func (s *Sflix) GetSeasons(mediaID string) ([]core.Season, error) {
 		id := sel.AttrOr("data-id", "")
 		name := strings.TrimSpace(sel.Text())
 		if id != "" {
-			// Append mediaID to season ID for context
+			// Append mediaID and type to season ID for context
+			// Format: "seasonID|mediaID|type"
 			if mediaID != "" {
-				id = id + "|" + mediaID
+				if mediaType != "" {
+					id = id + "|" + actualMediaID + "|" + mediaType
+				} else {
+					id = id + "|" + actualMediaID
+				}
 			}
 			seasons = append(seasons, core.Season{ID: id, Name: name})
 		}
@@ -149,12 +165,15 @@ func (s *Sflix) GetSeasons(mediaID string) ([]core.Season, error) {
 }
 
 func (s *Sflix) GetEpisodes(id string, isSeason bool) ([]core.Episode, error) {
-	// Check if id contains mediaID (format: "id|mediaID")
-	var actualID, mediaID string
+	// Parse ID format: "id" or "id|mediaID" or "id|mediaID|type"
+	var actualID, mediaID, mediaType string
 	parts := strings.Split(id, "|")
-	if len(parts) == 2 {
+	if len(parts) >= 2 {
 		actualID = parts[0]
 		mediaID = parts[1]
+		if len(parts) >= 3 {
+			mediaType = parts[2]
+		}
 	} else {
 		actualID = id
 	}
@@ -181,13 +200,22 @@ func (s *Sflix) GetEpisodes(id string, isSeason bool) ([]core.Episode, error) {
 	var episodes []core.Episode
 
 	if isSeason {
-		doc.Find("a.eps-item").Each(func(i int, sel *goquery.Selection) {
+		doc.Find(".eps-item").Each(func(i int, sel *goquery.Selection) {
 			epID := sel.AttrOr("data-id", "")
-			name := strings.TrimSpace(sel.AttrOr("title", sel.Text()))
+			// Get title from the img element inside
+			name := strings.TrimSpace(sel.Find("img.film-poster-img").AttrOr("title", ""))
+			if name == "" {
+				name = strings.TrimSpace(sel.Text())
+			}
 			if epID != "" {
-				// Append mediaID to episode ID for context
+				// Append mediaID and type to episode ID for context
+				// Format: "episodeID|mediaID|type"
 				if mediaID != "" {
-					epID = epID + "|" + mediaID
+					if mediaType != "" {
+						epID = epID + "|" + mediaID + "|" + mediaType
+					} else {
+						epID = epID + "|" + mediaID
+					}
 				}
 				episodes = append(episodes, core.Episode{ID: epID, Name: name})
 			}
@@ -198,9 +226,14 @@ func (s *Sflix) GetEpisodes(id string, isSeason bool) ([]core.Episode, error) {
 			epID := sel.AttrOr("data-id", "")
 			name := strings.TrimSpace(sel.Find("span").Text())
 			if epID != "" {
-				// Append mediaID to episode ID for context
+				// Append mediaID and type to episode ID for context
+				// Format: "serverID|mediaID|type"
 				if mediaID != "" {
-					epID = epID + "|" + mediaID
+					if mediaType != "" {
+						epID = epID + "|" + mediaID + "|" + mediaType
+					} else {
+						epID = epID + "|" + mediaID
+					}
 				}
 				episodes = append(episodes, core.Episode{ID: epID, Name: name})
 			}
@@ -211,23 +244,34 @@ func (s *Sflix) GetEpisodes(id string, isSeason bool) ([]core.Episode, error) {
 }
 
 func (s *Sflix) GetServers(episodeID string) ([]core.Server, error) {
-	// Check if episodeID contains mediaID (format: "id|mediaID")
-	var actualEpisodeID, mediaID string
+	// Parse episodeID format: "id" or "id|mediaID" or "id|mediaID|type"
+	var actualEpisodeID, mediaID, mediaType string
 	parts := strings.Split(episodeID, "|")
-	if len(parts) == 2 {
+	if len(parts) >= 2 {
 		actualEpisodeID = parts[0]
 		mediaID = parts[1]
+		if len(parts) >= 3 {
+			mediaType = parts[2]
+		}
 	} else {
 		actualEpisodeID = episodeID
 	}
 
-	return s.fetchServersWithMediaID(actualEpisodeID, mediaID)
+	return s.fetchServersWithMediaID(actualEpisodeID, mediaID, mediaType)
 }
 
-func (s *Sflix) fetchServersWithMediaID(episodeID string, mediaID string) ([]core.Server, error) {
+func (s *Sflix) fetchServersWithMediaID(episodeID string, mediaID string, mediaType string) ([]core.Server, error) {
 	// Determine endpoint based on whether it's a movie or TV show
 	var endpoint string
-	isMovie := strings.Contains(mediaID, "movie") || !strings.Contains(mediaID, "tv")
+	var isMovie bool
+
+	// Check mediaType first
+	if mediaType != "" {
+		isMovie = strings.EqualFold(mediaType, "movie")
+	} else {
+		// Fall back to checking mediaID string content
+		isMovie = strings.Contains(mediaID, "movie") || !strings.Contains(mediaID, "tv")
+	}
 
 	if isMovie {
 		// For movies, use /ajax/episode/list/{episodeId}
