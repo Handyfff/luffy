@@ -227,7 +227,6 @@ Luffy uses six main providers, which you can easily change between by specifying
     ```yaml
     provider: youtube
     ```
-    **NOTE**: `brocoflix` & `xprime` doesn't return any subtitle urls, but their quality is much better.
 
 There are one experimental providers, using these may not always work. These are:
 
