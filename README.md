@@ -49,7 +49,7 @@
 - [Providers](#providers)
 
 > [!NOTE]
-> Before creating an issue, make sure to update luffy using `luffy -u`. On Windows, it is recommended to only use scoop to update luffy.
+> Before creating an issue, make sure to update luffy.
 
 ## Installation
 
