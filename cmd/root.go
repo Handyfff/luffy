@@ -52,8 +52,7 @@ var rootCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if updateFlag {
-			core.Update()
-			return nil
+			return core.Update()
 		}
 
 		client := core.NewClient()
