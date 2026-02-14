@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func Download(basePath, dlPath, name, url, referer, userAgent string, subtitles []string, debug bool) error {
@@ -38,11 +40,18 @@ func Download(basePath, dlPath, name, url, referer, userAgent string, subtitles 
 	if debug {
 		fmt.Printf("Downloading to %s...\n", outputTemplate)
 	}
-	cmd := exec.Command("yt-dlp", args...)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			return fmt.Errorf("yt-dlp timed out after 30 minutes")
+		}
 		return fmt.Errorf("yt-dlp failed: %w", err)
 	}
 
