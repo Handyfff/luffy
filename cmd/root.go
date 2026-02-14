@@ -220,7 +220,7 @@ var rootCmd = &cobra.Command{
 		}
 		currentAction = strings.ToLower(currentAction)
 
-		processStream := func(link, name string) {
+		processStream := func(link, name string) error {
 			var streamURL string
 			var subtitles []string
 			var err error
@@ -269,7 +269,7 @@ var rootCmd = &cobra.Command{
 				streamURL, subtitles, decryptedReferer, err = core.DecryptStream(link, ctx.Client)
 				if err != nil {
 					fmt.Printf("Decryption failed for %s: %v\n", name, err)
-					return
+					return err
 				}
 				if decryptedReferer != "" {
 					referer = decryptedReferer
@@ -308,6 +308,7 @@ var rootCmd = &cobra.Command{
 				err = core.Play(streamURL, name, referer, USER_AGENT, subtitles, ctx.Debug)
 				if err != nil {
 					fmt.Println("Error playing:", err)
+					return err
 				}
 			case "download":
 				dlPath := cfg.DlPath
@@ -318,10 +319,12 @@ var rootCmd = &cobra.Command{
 				err = core.Download(homeDir, dlPath, name, streamURL, referer, USER_AGENT, subtitles, ctx.Debug)
 				if err != nil {
 					fmt.Println("Error downloading:", err)
+					return err
 				}
 			default:
 				fmt.Println("Unknown action:", currentAction)
 			}
+			return nil
 		}
 
 		if ctx.ContentType == core.Movie {
@@ -348,7 +351,9 @@ var rootCmd = &cobra.Command{
 				return fmt.Errorf("error getting link: %v", err)
 			}
 
-			processStream(link, ctx.Title)
+			if err := processStream(link, ctx.Title); err != nil {
+				return err
+			}
 
 		} else {
 			// Series Processing
@@ -381,7 +386,9 @@ var rootCmd = &cobra.Command{
 					continue
 				}
 
-				processStream(link, ctx.Title+" - "+ep.Name)
+				if err := processStream(link, ctx.Title+" - "+ep.Name); err != nil {
+					continue
+				}
 			}
 		}
 
