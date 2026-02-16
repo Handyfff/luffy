@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -60,6 +61,13 @@ func (f *FlixHQ) Search(query string) ([]core.SearchResult, error) {
 		poster := s.Find("img.film-poster-img").AttrOr("data-src", "")
 		typeStr := strings.TrimSpace(s.Find("span.fdi-type").Text())
 
+		var year string
+		s.Find("span.fdi-item").Each(func(_ int, sel *goquery.Selection) {
+			if regexp.MustCompile(`^\d{4}$`).MatchString(strings.TrimSpace(sel.Text())) {
+				year = strings.TrimSpace(sel.Text())
+			}
+		})
+
 		mediaType := core.Movie
 		if strings.EqualFold(typeStr, "TV") || strings.EqualFold(typeStr, "Series") {
 			mediaType = core.Series
@@ -71,6 +79,7 @@ func (f *FlixHQ) Search(query string) ([]core.SearchResult, error) {
 				URL:    FLIXHQ_BASE_URL + href,
 				Type:   mediaType,
 				Poster: poster,
+				Year:   year,
 			})
 		}
 		return true

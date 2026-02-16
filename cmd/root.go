@@ -7,9 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/demonkingswarn/luffy/core"
 	"github.com/demonkingswarn/luffy/core/providers"
@@ -101,39 +99,20 @@ var rootCmd = &cobra.Command{
 
 		var titles []string
 		for _, r := range results {
-			titles = append(titles, fmt.Sprintf("[%s] %s", r.Type, r.Title))
+			title := fmt.Sprintf("[%s] %s", r.Type, r.Title)
+			if r.Year != "" {
+				title += fmt.Sprintf(" (%s)", r.Year)
+			}
+			titles = append(titles, title)
 		}
 
 		var idx int
-		if showImageFlag {
-			fmt.Println("Downloading posters...")
-			var wg sync.WaitGroup
-			for _, r := range results {
-				wg.Add(1)
-				go func(r core.SearchResult) {
-					defer wg.Done()
-					core.DownloadPoster(r.Poster, r.Title)
-				}(r)
-			}
-			wg.Wait()
-
-			cfg := core.LoadConfig()
-			cacheDir, _ := core.GetCacheDir()
-			exe, _ := os.Executable()
-			previewCmd := fmt.Sprintf("%s preview --backend %s --cache %s {}", exe, cfg.ImageBackend, cacheDir)
-			idx = core.SelectWithPreview("Results:", titles, previewCmd)
-		} else {
-			idx = core.Select("Results:", titles)
-		}
+		idx = core.Select("Results:", titles)
 		selected := results[idx]
 
 		ctx.Title = selected.Title
 		ctx.URL = selected.URL
 		ctx.ContentType = selected.Type
-
-		if showImageFlag {
-			go core.CleanCache()
-		}
 
 		fmt.Println("Selected:", ctx.Title)
 
@@ -197,11 +176,16 @@ var rootCmd = &cobra.Command{
 				}
 			} else {
 				var eNames []string
+				eNames = append(eNames, "All Episodes")
 				for _, e := range allEpisodes {
 					eNames = append(eNames, e.Name)
 				}
 				eIdx := core.Select("Episodes:", eNames)
-				episodesToProcess = append(episodesToProcess, allEpisodes[eIdx])
+				if eIdx == 0 {
+					episodesToProcess = append(episodesToProcess, allEpisodes...)
+				} else {
+					episodesToProcess = append(episodesToProcess, allEpisodes[eIdx-1])
+				}
 			}
 
 		} else {
@@ -214,11 +198,13 @@ var rootCmd = &cobra.Command{
 
 		currentAction := actionFlag
 		if currentAction == "" {
-			actions := []string{"Play", "Download"}
+			actions := []string{"Play", "Download", "Extract Link"}
 			actIdx := core.Select("Action:", actions)
 			currentAction = actions[actIdx]
 		}
 		currentAction = strings.ToLower(currentAction)
+
+		var selectedQualityIndex = -1
 
 		processStream := func(link, name string) error {
 			var streamURL string
@@ -232,27 +218,36 @@ var rootCmd = &cobra.Command{
 
 			if strings.EqualFold(providerName, "hdrezka") {
 				streams := strings.Split(link, ",")
-				bestQuality := 0
+				var qualities []string
+				var urls []string
+
 				for _, s := range streams {
 					s = strings.TrimSpace(s)
 					if strings.HasPrefix(s, "[") {
 						end := strings.Index(s, "]")
 						if end > 1 {
 							qualityStr := s[1:end]
-							qualityStr = strings.TrimSuffix(qualityStr, "p")
-							q, _ := strconv.Atoi(qualityStr)
-							if q > bestQuality {
-								bestQuality = q
-								streamURL = s[end+1:]
-							}
+							qualities = append(qualities, qualityStr)
+							urls = append(urls, s[end+1:])
 						}
 					} else {
-						if streamURL == "" {
-							streamURL = s
-						}
+						qualities = append(qualities, "Default")
+						urls = append(urls, s)
 					}
 				}
-				if streamURL == "" {
+
+				if len(urls) > 1 {
+					var idx int
+					if selectedQualityIndex != -1 && selectedQualityIndex < len(urls) {
+						idx = selectedQualityIndex
+					} else {
+						idx = core.Select("Select Quality:", qualities)
+						selectedQualityIndex = idx
+					}
+					streamURL = urls[idx]
+				} else if len(urls) == 1 {
+					streamURL = urls[0]
+				} else {
 					streamURL = link
 				}
 				// Fix protocol if needed
@@ -285,18 +280,30 @@ var rootCmd = &cobra.Command{
 				}
 			}
 
-			if strings.Contains(streamURL, ".m3u8") {
+			if strings.Contains(strings.ToLower(streamURL), ".m3u8") {
 				if ctx.Debug {
-					fmt.Println("Checking for best quality stream...")
+					fmt.Println("Checking for available qualities...")
 				}
-				best, err := core.GetBestQualityM3U8(streamURL, ctx.Client)
-				if err == nil {
-					if ctx.Debug && best != streamURL {
-						fmt.Printf("Upgraded quality: %s\n", best)
+				streams, err := core.GetM3U8Streams(streamURL, ctx.Client)
+				if err == nil && len(streams) > 0 {
+					var options []string
+					for _, s := range streams {
+						res := s.Resolution
+						if s.Bandwidth > 0 {
+							res += fmt.Sprintf(" (%dkbps)", s.Bandwidth/1000)
+						}
+						options = append(options, res)
 					}
-					streamURL = best
+					var idx int
+					if selectedQualityIndex != -1 && selectedQualityIndex < len(streams) {
+						idx = selectedQualityIndex
+					} else {
+						idx = core.Select("Select Quality:", options)
+						selectedQualityIndex = idx
+					}
+					streamURL = streams[idx].URL
 				} else if ctx.Debug {
-					fmt.Printf("Failed to parse m3u8: %v\n", err)
+					fmt.Printf("Failed to parse m3u8 or no variants found: %v\n", err)
 				}
 			}
 
@@ -320,6 +327,11 @@ var rootCmd = &cobra.Command{
 				if err != nil {
 					fmt.Println("Error downloading:", err)
 					return err
+				}
+			case "extract link", "extract", "copy":
+				fmt.Printf("\nStream URL [%s]: %s\n", name, streamURL)
+				if len(subtitles) > 0 {
+					fmt.Printf("Subtitles: %s\n", strings.Join(subtitles, ", "))
 				}
 			default:
 				fmt.Println("Unknown action:", currentAction)

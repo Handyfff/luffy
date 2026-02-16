@@ -309,9 +309,7 @@ func (h *HDRezka) GetLink(serverID string) (string, error) {
 }
 
 func (h *HDRezka) Decode(data string) string {
-	if strings.HasPrefix(data, "#h") {
-		data = data[2:]
-	}
+	data = strings.TrimPrefix(data, "#h")
 
 	chunks := strings.Split(data, "//_//")
 	var valid strings.Builder

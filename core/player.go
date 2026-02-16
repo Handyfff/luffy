@@ -10,6 +10,7 @@ import (
 
 var mpv_executable string = "mpv"
 var vlc_executable string = "vlc"
+var mpc_executable string = "mpc-be64"
 
 func checkAndroid() bool {
 	cmd := exec.Command("uname", "-o")
@@ -25,9 +26,11 @@ func Play(url, title, referer, userAgent string, subtitles []string, debug bool)
 	if runtime.GOOS == "windows" {
 		mpv_executable = "mpv.exe"
 		vlc_executable = "vlc.exe"
+		mpc_executable = "C:\\Program Files\\MPC-BE\\mpc-be64.exe"
 	} else {
 		mpv_executable = "mpv"
 		vlc_executable = "vlc"
+		mpc_executable = "mpc-be64"
 	}
 
 	var cmd *exec.Cmd
@@ -92,6 +95,8 @@ func Play(url, title, referer, userAgent string, subtitles []string, debug bool)
 			}
 
 			cmd = exec.Command(vlc_executable, args...)
+		} else if cfg.Player == "mpc-be" {
+			cmd = exec.Command(mpc_executable, url)
 		} else {
 			// Default to mpv
 			args := []string{

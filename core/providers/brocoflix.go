@@ -61,6 +61,13 @@ func (b *Brocoflix) Search(query string) ([]core.SearchResult, error) {
 			mediaType = core.Series
 		}
 
+		var year string
+		if item.ReleaseDate != "" && len(item.ReleaseDate) >= 4 {
+			year = item.ReleaseDate[:4]
+		} else if item.FirstAirDate != "" && len(item.FirstAirDate) >= 4 {
+			year = item.FirstAirDate[:4]
+		}
+
 		resURL := fmt.Sprintf("%s/pages/info.html?id=%d&type=%s", BROCOFLIX_BASE_URL, item.ID, item.MediaType)
 
 		results = append(results, core.SearchResult{
@@ -68,6 +75,7 @@ func (b *Brocoflix) Search(query string) ([]core.SearchResult, error) {
 			URL:    resURL,
 			Type:   mediaType,
 			Poster: poster,
+			Year:   year,
 		})
 	}
 

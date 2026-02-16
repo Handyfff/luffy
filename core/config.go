@@ -18,7 +18,7 @@ type Config struct {
 func LoadConfig() *Config {
 	config := &Config{
 		FzfPath:      "fzf",    // Default
-		Player:       "mpv",    // Default player
+		Player:       "mpc-be", // Default player
 		ImageBackend: "sixel",  // Default image backend
 		Provider:     "flixhq", // Default provider
 		DlPath:       "",       // Default: use home directory
@@ -42,7 +42,7 @@ func LoadConfig() *Config {
 		// YAML parsing failed, return defaults
 		return &Config{
 			FzfPath:      "fzf",
-			Player:       "mpv",
+			Player:       "mpc-be",
 			ImageBackend: "sixel",
 			Provider:     "flixhq",
 			DlPath:       "",

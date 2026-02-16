@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -61,6 +62,13 @@ func (s *Sflix) Search(query string) ([]core.SearchResult, error) {
 		// Get type from the strong tag inside fdi-item (e.g., "TV" or "Movie")
 		typeStr := strings.TrimSpace(sel.Find("span.fdi-item strong").Text())
 
+		var year string
+		sel.Find("span.fdi-item").Each(func(_ int, s *goquery.Selection) {
+			if regexp.MustCompile(`^\d{4}$`).MatchString(strings.TrimSpace(s.Text())) {
+				year = strings.TrimSpace(s.Text())
+			}
+		})
+
 		mediaType := core.Movie
 		if strings.EqualFold(typeStr, "TV") || strings.EqualFold(typeStr, "Series") {
 			mediaType = core.Series
@@ -79,6 +87,7 @@ func (s *Sflix) Search(query string) ([]core.SearchResult, error) {
 				URL:    SFLIX_BASE_URL + href,
 				Type:   mediaType,
 				Poster: poster,
+				Year:   year,
 			})
 		}
 		return true

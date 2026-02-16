@@ -61,6 +61,13 @@ func (x *XPrime) Search(query string) ([]core.SearchResult, error) {
 			mediaType = core.Series
 		}
 
+		var year string
+		if item.ReleaseDate != "" && len(item.ReleaseDate) >= 4 {
+			year = item.ReleaseDate[:4]
+		} else if item.FirstAirDate != "" && len(item.FirstAirDate) >= 4 {
+			year = item.FirstAirDate[:4]
+		}
+
 		resURL := fmt.Sprintf("%s/%s/%d", XPRIME_BASE_URL, item.MediaType, item.ID)
 
 		results = append(results, core.SearchResult{
@@ -68,6 +75,7 @@ func (x *XPrime) Search(query string) ([]core.SearchResult, error) {
 			URL:    resURL,
 			Type:   mediaType,
 			Poster: poster,
+			Year:   year,
 		})
 	}
 
